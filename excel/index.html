@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>moban</title>
+  <style>
+    body,h1,h2,h3,h4,h5,h6,ul,ol,p{margin:0;font-weight: normal}
+    ul,ol{padding:0; list-style:none;}
+    a{text-decoration: none;}
+    #result,#box{
+      float: left;
+    }
+  </style>
+</head>
+<body>
+
+  <input class="input" type="file">
+
+  <div id="result"></div>
+  <div id="box"></div>
+
+  <script type="text/javascript" src="./js/xlsx.core.min.js"></script>
+  <script type="text/javascript" src="./js/xlsx.full.min.js"></script>
+  <script>
+  let aForm = document.getElementsByClassName("input")[0]
+
+  aForm.onchange=function(event){
+    // 传入数据
+    readWorkbookFromLocalFile(this.files[0],readWorkbook)
+  }
+  // 读取本地excel文件
+  function readWorkbookFromLocalFile(file, callback) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var data = e.target.result;
+      var workbook = XLSX.read(data, {type: 'binary'});
+      if(callback) callback(workbook);
+      
+    };
+    reader.readAsBinaryString(file);
+  }
+  // 处理数据
+  function readWorkbook(workbook){
+    var sheetNames = workbook.SheetNames; // 工作表名称集合
+    var worksheet = workbook.Sheets[sheetNames[0]]; // 这里我们只读取第一张sheet
+    var csv = XLSX.utils.sheet_to_csv(worksheet);
+    csv2table(csv);
+  }
+
+    // 将csv转换成简单的表格，会忽略单元格合并，在第一行和第一列追加类似excel的索引
+  function csv2table(csv) {
+    var rows = csv.split('\n');
+    rows.pop(); // 最后一行没用的
+    var html=""
+    var ap=""
+    rows.forEach(function (row, idx) {
+      var columns = row.split(',');
+      columns.forEach(function (column,index) {
+        if(index){
+          html += '<p>' + column + '</p>';
+        }else{
+          ap +='<p>' + column + '</p>';
+        }
+      });
+
+
+    });
+    document.getElementById('box').innerHTML=ap
+    document.getElementById('result').innerHTML=html
+  }
+ 
+
+
+
+  </script>
+</body>
+</html>
